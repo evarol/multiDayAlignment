@@ -5,7 +5,7 @@ clc
 %% parameters
 
 brightness=1; %increase to make images easier to see
-channel_to_use=1; %for multi channel images, select the channel for alignment e.g. where GCaMP is
+channel_to_use=2; %for multi channel images, select the channel for alignment e.g. where GCaMP is
 is3d=0; %toggle 1 if the images are 3D
 
 
@@ -24,7 +24,6 @@ for i=1:length(file)
     filename{i}=[path file{i}];
 end
 
-% load files.mat
 %%
 for i=1:length(filename)
     if is3d==0
