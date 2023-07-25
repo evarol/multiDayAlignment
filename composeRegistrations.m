@@ -5,7 +5,7 @@ clc
 %% parameters
 
 brightness=1; %increase to make images easier to see
-channel_to_use=2; %for multi channel images, select the channel for alignment e.g. where GCaMP is
+channel_to_use=1; %for multi channel images, select the channel for alignment e.g. where GCaMP is
 is3d=0; %toggle 1 if the images are 3D
 
 
@@ -82,9 +82,10 @@ total_rotation{1}=eye(3);
 registered{1}=I{1};
 rigid_registered{1}=I{1};
 
-
+composed_field{1}=zeros(size(I{1},1),size(I{1},2),2);
 % back tracking transformations for each slice to slice 1
 for i=2:length(tforms)
+    composed_field{i}=zeros(size(I{i},1),size(I{i},2),2);
     for z=1:size(I{i},3)
         registered{i}(:,:,z)=I{i}(:,:,z);
     end
@@ -92,6 +93,7 @@ for i=2:length(tforms)
     for z=1:size(I{i},3)
         registered{i}(:,:,z)=imwarp(registered{i}(:,:,z),total_ufield{i});
     end
+    composed_field{i}=composeUfields(composed_field{i},total_ufield{i},coormap,1);
     
     total_rotation{i}=eye(3);
     if i>2
@@ -99,6 +101,7 @@ for i=2:length(tforms)
             tic
             backtracked_ufield{i,j-1}=composeUfields(backtracked_ufield{i,j},total_ufield{j},coormap,1);
             total_rotation{i}=tforms{j}.globTform*total_rotation{i};
+            composed_field{i}=composeUfields(composed_field{i},total_ufield{j},coormap,1);
             for z=1:size(I{i},3)
                 registered{i}(:,:,z)=imwarp(registered{i}(:,:,z),total_ufield{j});
             end
@@ -107,6 +110,10 @@ for i=2:length(tforms)
         end
     end
     
+end
+
+for i=1:length(I)
+    registered_composed{i}=imwarp(I{i},composed_field{i});
 end
 
 
@@ -120,6 +127,11 @@ end
 %% final pass
 for i=1:length(I)
 [final_pass{i},vfield_final]=deformableReg(I{1}(:,:,1),registered{i}(:,:,1),40,40,100,brightness);
+end
+
+%% final pass
+for i=1:length(I)
+[final_pass_composed{i},vfield_final]=deformableReg(I{1}(:,:,1),registered_composed{i}(:,:,1),40,40,100,brightness);
 end
 
 
@@ -172,10 +184,21 @@ for i=1:length(I)
 %     axis equal;axis off
 end
 set(gcf,'color','w');
+
+%% Globally aligned slices through composition - final pass
+figure(5)
+for i=1:length(I)
+    ax5(i)=subplot(2,4,i);
+    imagesc(brightness*myimfuse(I{1}(:,:,1),final_pass_composed{i}{end}(:,:,1)));    
+    title({'Global alignment (composed):',['Red: ' strpart(strsplit(filename{1},'/'),length(strsplit(filename{1},'/')))],['Green: ' strpart(strsplit(filename{i},'/'),length(strsplit(filename{i},'/')))]},'interpreter','none');drawnow
+    set(gca,'FontSize',14,'FontWeight','bold');
+%     axis equal;axis off
+end
+set(gcf,'color','w');
 linkaxes([ax2 ax4])
 
 %% Globally aligned slices - final pass
-figure(5)
+figure(6)
 ha=tight_subplot(2,length(I),[0.01 0.01],0.1,0.1);
 for i=1:length(I)
     axes(ha(i))
@@ -191,6 +214,22 @@ end
 set(gcf,'color','w');
 linkaxes(ha)
 
+%% Globally aligned slices through composition - final pass
+figure(7)
+ha2=tight_subplot(2,length(I),[0.01 0.01],0.1,0.1);
+for i=1:length(I)
+    axes(ha2(i))
+    imagesc(brightness*myimfuse(zeros(size(I{i}(:,:,1))),minmax(final_pass{i}{end}(:,:,1))));  
+    title({'Alignment overlay:',['Red: ' strpart(strsplit(filename{1},'/'),length(strsplit(filename{1},'/')))],['Green: ' strpart(strsplit(filename{i},'/'),length(strsplit(filename{i},'/')))]},'interpreter','none');drawnow
+    axis equal;set(gca,'xtick',[],'ytick',[],'ticklength',[0 0]);
+    axes(ha2(length(I)+i))
+    imagesc(brightness*myimfuse(zeros(size(I{i}(:,:,1))),minmax(final_pass_composed{i}{end}(:,:,1))));
+    xlabel({'Aligned individual day only:',['Green: ' strpart(strsplit(filename{i},'/'),length(strsplit(filename{i},'/')))]},'interpreter','none');drawnow
+    set(gca,'FontWeight','bold');
+    axis equal;set(gca,'xtick',[],'ytick',[],'ticklength',[0 0]);
+end
+set(gcf,'color','w');
+linkaxes(ha2)
 %% save data
 % 
 % for i=1:length(I)
