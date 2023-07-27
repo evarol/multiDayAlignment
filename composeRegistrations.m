@@ -220,11 +220,11 @@ ha2=tight_subplot(2,length(I),[0.01 0.01],0.1,0.1);
 for i=1:length(I)
     axes(ha2(i))
     imagesc(brightness*myimfuse(zeros(size(I{i}(:,:,1))),minmax(final_pass{i}{end}(:,:,1))));  
-    title({'Alignment overlay:',['Red: ' strpart(strsplit(filename{1},'/'),length(strsplit(filename{1},'/')))],['Green: ' strpart(strsplit(filename{i},'/'),length(strsplit(filename{i},'/')))]},'interpreter','none');drawnow
+    xlabel({'Aligned individual day only (without sharpening):',['Green: ' strpart(strsplit(filename{i},'/'),length(strsplit(filename{i},'/')))]},'interpreter','none');drawnow
     axis equal;set(gca,'xtick',[],'ytick',[],'ticklength',[0 0]);
     axes(ha2(length(I)+i))
     imagesc(brightness*myimfuse(zeros(size(I{i}(:,:,1))),minmax(final_pass_composed{i}{end}(:,:,1))));
-    xlabel({'Aligned individual day only:',['Green: ' strpart(strsplit(filename{i},'/'),length(strsplit(filename{i},'/')))]},'interpreter','none');drawnow
+    xlabel({'Aligned individual day only (with sharpening):',['Green: ' strpart(strsplit(filename{i},'/'),length(strsplit(filename{i},'/')))]},'interpreter','none');drawnow
     set(gca,'FontWeight','bold');
     axis equal;set(gca,'xtick',[],'ytick',[],'ticklength',[0 0]);
 end
