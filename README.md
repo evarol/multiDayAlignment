@@ -1,9 +1,9 @@
 # multiDayAlignment
 
-Alignment of multiple day microscopy images.
+Alignment of multiple day microscopy images 
 
 ![Demo](https://github.com/evarol/multiDayAlignment/blob/master/demo_2.png)
-
+(images provided by Carl Shi @ Attila Losonczy's lab)
 
 Step 1: Open multidayAlignment.m in Matlab, press run and select multiple images to align (.tif, .png files). It's important to select files in order you'd like them to be registered e.g. day 1 then day 2 then day 3 (Don't just multi select them in one shot).
 
